@@ -1,0 +1,187 @@
+<!--
+  copyweb-skill · starter-template.html
+  ============================================================
+  这是 copyweb 产出新风格 skill 时的 STARTER 基底（脚手架）。
+  它本身是"风格中立"的：所有配色/字体/圆角/阴影都写成 CSS 变量占位符，
+  阶段4 封装时，把阶段2 分析出的精确数值填进 :root 即可，得到该风格专属的 starter-template.html。
+
+  硬性要求（复制到产物时必须保留）：
+  1. 完整 CSS 变量表（palette / fonts / spacing / radius / shadow）
+  2. 字体栈 fallback（含 CJK fallback）
+  3. 昼夜主题切换 hook —— 右上角固定定位 + localStorage 持久化（用户硬性偏好，不可省略）
+  4. ≥3 个代表区块示例 markup（nav / hero / card grid）
+  ============================================================
+-->
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>{{STYLE_NAME}} · starter</title>
+<style>
+  /* ============================================================
+     :root —— 阶段2 分析结果填这里（把 {{占位}} 换成精确数值）
+     铁律：这里是"实际使用值"，不是网站 :root 里定义但没用的变量。
+     ============================================================ */
+  :root {
+    /* --- 主色（>70% 面积，决定调性）--- */
+    --color-bg:            #ffffff;   /* 页面主背景 */
+    --color-fg:            #0f0f10;   /* 主文字 */
+    --color-fg-muted:      #6b6b6b;   /* 次要文字 */
+    --color-border:        #e5e5e5;   /* 边框 */
+    --color-card:          #ffffff;   /* 卡片底 */
+
+    /* --- 反色锚点（<30% 面积，节奏锚点，不是主调）--- */
+    --color-anchor-bg:     #0f0f10;   /* 反色块背景（主 CTA / 重点 section）*/
+    --color-anchor-fg:     #ffffff;   /* 反色块文字 */
+
+    /* --- 强调色（如有；金融场景中国区红涨绿跌）--- */
+    --color-accent:        #1a1a4e;   /* 品牌强调 */
+    --color-up:            #d4341f;   /* 涨 = 红（中国）*/
+    --color-down:          #1f9d55;   /* 跌 = 绿（中国）*/
+
+    /* --- 字体栈（4 角色 + CJK fallback）--- */
+    --font-body:    "{{BODY_FONT}}", system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    --font-display: "{{DISPLAY_FONT}}", "{{BODY_FONT}}", "PingFang SC", serif;
+    --font-num:     "{{NUM_FONT}}", "{{BODY_FONT}}", ui-monospace, monospace;
+    /* 装饰字体：仅 hero/CTA，禁用正文 */
+    --font-deco:    "{{DECO_FONT}}", var(--font-display);
+
+    /* --- 节奏 --- */
+    --radius:       12px;   /* 卡片圆角，阶段2 实测值 */
+    --shadow:       0 1px 3px rgba(0,0,0,.06);  /* 或 none（扁平风）*/
+    --maxw:         1120px; /* 内容最大宽度 */
+    --gap-section:  96px;   /* 区块纵向节奏 */
+  }
+
+  /* --- 昼夜切换：dark 主题变量覆盖（阶段2 若原站无 dark，则做合理反相）--- */
+  [data-theme="dark"] {
+    --color-bg:       #0f0f10;
+    --color-fg:       #f5f5f5;
+    --color-fg-muted: #a0a0a0;
+    --color-border:   #2a2a2a;
+    --color-card:     #17171a;
+    --color-anchor-bg:#f5f5f5;
+    --color-anchor-fg:#0f0f10;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--color-bg);
+    color: var(--color-fg);
+    font-family: var(--font-body);
+    line-height: 1.7;               /* CJK 正文行高 ≥1.7 */
+    -webkit-font-smoothing: antialiased;
+    transition: background .3s, color .3s;
+  }
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
+  a { color: inherit; text-decoration: none; }
+
+  /* ---------- 昼夜切换按钮（右上角固定，硬性要求）---------- */
+  .theme-toggle {
+    position: fixed; top: 20px; right: 20px; z-index: 999;
+    padding: 8px 16px; font-size: 13px; cursor: pointer;
+    background: var(--color-fg); color: var(--color-bg);
+    border: 1px solid var(--color-fg); border-radius: 999px;
+    font-family: var(--font-body); transition: all .2s;
+  }
+  .theme-toggle:hover { opacity: .85; }
+
+  /* ---------- 区块1 · 顶部导航 ---------- */
+  .nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 24px; border-bottom: 1px solid var(--color-border);
+  }
+  .nav__logo { font-family: var(--font-display); font-weight: 700; font-size: 20px; }
+  .nav__links { display: flex; gap: 28px; font-size: 14px; color: var(--color-fg-muted); }
+
+  /* ---------- 区块2 · Hero ---------- */
+  .hero { text-align: center; padding: var(--gap-section) 0; }
+  .hero__title {
+    font-family: var(--font-display); font-weight: 700;
+    font-size: clamp(32px, 6vw, 64px); line-height: 1.1; letter-spacing: -.02em;
+  }
+  .hero__sub { margin-top: 20px; font-size: 18px; color: var(--color-fg-muted); }
+  .hero__cta {
+    display: inline-block; margin-top: 32px; padding: 14px 32px;
+    background: var(--color-anchor-bg); color: var(--color-anchor-fg);
+    border-radius: var(--radius); font-weight: 600;
+  }
+
+  /* ---------- 区块3 · 卡片网格 ---------- */
+  .grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px; padding-bottom: var(--gap-section);
+  }
+  .card {
+    background: var(--color-card); border: 1px solid var(--color-border);
+    border-radius: var(--radius); box-shadow: var(--shadow);
+    padding: 28px; transition: transform .2s, box-shadow .2s;
+  }
+  .card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,.1); }
+  .card__title { font-family: var(--font-display); font-size: 20px; font-weight: 700; margin-bottom: 12px; }
+  .card__body { color: var(--color-fg-muted); font-size: 15px; }
+
+  @media (max-width: 640px) {
+    .nav__links { display: none; }
+    :root { --gap-section: 56px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 昼夜切换按钮：所有产物必须保留 -->
+<button class="theme-toggle" onclick="toggleTheme()">🌗 Day / Night</button>
+
+<!-- 区块1 · 导航 -->
+<nav class="nav">
+  <div class="nav__logo">{{BRAND}}</div>
+  <div class="nav__links">
+    <a href="#">Product</a><a href="#">Pricing</a><a href="#">Docs</a><a href="#">Login</a>
+  </div>
+</nav>
+
+<!-- 区块2 · Hero -->
+<header class="hero wrap">
+  <h1 class="hero__title">在这里放一句<br>{{STYLE_NAME}} 风格的大标题</h1>
+  <p class="hero__sub">副标题：一句话说明产品价值。字号 18px，次要文字色。</p>
+  <a class="hero__cta" href="#">主 CTA（反色锚点）</a>
+</header>
+
+<!-- 区块3 · 卡片网格 -->
+<main class="wrap">
+  <section class="grid">
+    <article class="card">
+      <h3 class="card__title">签名元素 1</h3>
+      <p class="card__body">把阶段2 提炼的 2-4 个签名级视觉元素做成卡片示例，每个对应 components.md 一个配方。</p>
+    </article>
+    <article class="card">
+      <h3 class="card__title">签名元素 2</h3>
+      <p class="card__body">卡片默认扁平还是带阴影？边框色/圆角/hover 行为，全部来自阶段2 实测。</p>
+    </article>
+    <article class="card">
+      <h3 class="card__title">签名元素 3</h3>
+      <p class="card__body">若是金融场景，数字用 <code>tabular-nums</code>，涨红跌绿（中国区）。</p>
+    </article>
+  </section>
+</main>
+
+<script>
+  /* ---------- 昼夜切换 hook（右上角固定 + localStorage 持久化）---------- */
+  function toggleTheme() {
+    var html = document.documentElement;
+    var next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-theme', next);
+    try { localStorage.setItem('copyweb-theme', next); } catch (e) {}
+  }
+  (function () {
+    try {
+      var saved = localStorage.getItem('copyweb-theme');
+      if (saved) document.documentElement.setAttribute('data-theme', saved);
+    } catch (e) {}
+  })();
+</script>
+
+</body>
+</html>
