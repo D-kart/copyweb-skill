@@ -43,7 +43,18 @@ grep -oE 'box-shadow:[^;}"]+' /tmp/site.html | sort -u
 grep -oE '\.[a-zA-Z0-9_-]+\s*\{[^}]*background[^}]*\}' /tmp/site.html | head -40
 ```
 
-- [ ] 拿到原始 HTML（记录字节数，确认不是被墙的空壳）
+> **SPA 坑（getspine.ai 例）**：Vite/Next/Vue 等 SPA 首页 HTML 常只有 10-20KB 空壳，`grep` 变量/字体全为空——**设计 token 全在外链 CSS bundle 里**。别以为"扒不到"就放弃。做法：
+> ```bash
+> # 1. 先从首页 HTML 找到 CSS bundle 地址
+> grep -oE 'href="[^"]*\.css[^"]*"' /tmp/site.html | sort -u
+> # 2. 抓那个 CSS 文件（补全域名），再对它跑上面所有 grep
+> curl -sL "<url>/assets/index-XXXX.css" -o /tmp/app.css
+> grep -oE '\-\-[a-zA-Z0-9-]+:\s*[^;}]+' /tmp/app.css | sort -u
+> ```
+> 判断依据：首页 HTML 字节数很小（<30KB）+ 出现 `/assets/index-*.js` 或 `_next/` → 一定是 SPA，去抓 CSS bundle。
+> **双主题站**（`:root,[data-theme=dark]` + `[data-theme=light]`）：默认主态看 `:root` 归属哪套 + `color-scheme` 值，别把亮态当默认。
+
+- [ ] 拿到原始 HTML（记录字节数；**若 <30KB 且是 SPA，转抓 `/assets/*.css` bundle**）
 - [ ] 提取到 `:root{}` / CSS 变量块
 - [ ] 提取到 `font-family` / `@font-face` / `@import` 字体来源
 - [ ] 提取到 `border-radius` / `box-shadow` 数值
